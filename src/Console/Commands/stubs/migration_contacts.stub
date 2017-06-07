@@ -1,0 +1,29 @@
+<?php
+
+use Despark\Cms\Models\IgniMigration;
+use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\Schema;
+
+class :migration_class extends IgniMigration
+{
+    /**
+     * Run the migrations.
+     */
+    public function up()
+    {
+        Schema::create($this->getTableName(':table_name'), function (Blueprint $table) {
+            $table->increments('id');
+            $table->enum('type', ['telephone', 'email', 'address', 'fax', 'skype', 'facebook', 'twitter', 'google+', 'instagram']);
+            $table->string('content', 255);
+            $table->timestamps();
+        });
+    }
+
+    /**
+     * Reverse the migrations.
+     */
+    public function down()
+    {
+        Schema::dropIfExists($this->getTableName(':table_name'));
+    }
+}

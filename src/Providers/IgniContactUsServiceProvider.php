@@ -2,13 +2,10 @@
 
 namespace Despark\Cms\ContactUs\Providers;
 
-use Illuminate\Console\DetectsApplicationNamespace;
 use Illuminate\Support\ServiceProvider;
 
 class IgniContactUsServiceProvider extends ServiceProvider
 {
-    use DetectsApplicationNamespace;
-
     /**
      * Artisan commands.
      *
@@ -23,6 +20,9 @@ class IgniContactUsServiceProvider extends ServiceProvider
      */
     public function boot()
     {
+        $this->publishes([
+            __DIR__.'/../../config/entities/' => config_path('entities'),
+        ], 'entities');
     }
 
     /**
@@ -30,5 +30,7 @@ class IgniContactUsServiceProvider extends ServiceProvider
      */
     public function register()
     {
+        // Register the application commands
+        $this->commands($this->commands);
     }
 }

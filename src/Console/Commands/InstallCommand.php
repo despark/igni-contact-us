@@ -1,11 +1,11 @@
 <?php
 
-namespace Despark\Cms\ContactUsConsole\Commands;
+namespace Despark\Cms\ContactUs\Console\Commands;
 
-use Despark\Cms\ContactUsConsole\Commands\Compilers\ContactUsCompiler;
-use File;
+use Despark\Cms\ContactUs\Console\Commands\Compilers\ContactsCompiler;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\Schema;
+use File;
 
 /**
  * Class InstallCommand.
@@ -17,13 +17,14 @@ class InstallCommand extends Command
      *
      * @var string
      */
-    protected $name = 'igni:make:contact-us';
+    protected $name = 'igni:make:contacts';
+
     /**
      * The console command description.
      *
      * @var string
      */
-    protected $description = 'Create necessary files for CMS Contact Us resource.';
+    protected $description = 'Create necessary files for CMS Contacts resource.';
 
     /**
      * Table name.
@@ -35,14 +36,14 @@ class InstallCommand extends Command
     /**
      * Table name.
      *
-     * @var string
+     * @var array
      */
     protected $tableName;
 
     /**
      * Full table name.
      *
-     * @var string
+     * @var array
      */
     protected $fullTableName;
 
@@ -60,8 +61,10 @@ class InstallCommand extends Command
     {
         parent::__construct();
         $this->tablePrefix = config('ignicms.igniTablesPrefix');
-        $this->tableName = 'pages';
-        $this->fullTableName = $this->tablePrefix ? $this->tablePrefix.'_'.$this->tableName : $this->tableName;
+        $this->tableName['contacts'] = 'contacts';
+        $this->fullTableName['contacts'] = $this->tablePrefix ? $this->tablePrefix.'_'.$this->tableName['contacts'] : $this->tableName['contacts'];
+        $this->tableName['contact_messages'] = 'contact_messages';
+        $this->fullTableName['contact_messages'] = $this->tablePrefix ? $this->tablePrefix.'_'.$this->tableName['contact_messages'] : $this->tableName['contact_messages'];
     }
 
     /**
@@ -69,34 +72,44 @@ class InstallCommand extends Command
      */
     public function handle()
     {
-        dd('in');
-        if (Schema::hasTable($this->fullTableName)) {
-            $this->tableName = $this->ask('The table name '.$this->fullTableName.' already exists! Please enter a new one without it\'s prefix:');
-            $this->fullTableName = $this->tablePrefix ? $this->tablePrefix.'_'.$this->tableName : $this->tableName;
+        if (Schema::hasTable($this->fullTableName['contacts'])) {
+            $this->tableName['contacts'] = $this->ask('The table name '.$this->fullTableName['contacts'].' already exists! Please enter a new one without it\'s prefix:');
+            $this->fullTableName['contacts'] = $this->tablePrefix ? $this->tablePrefix.'_'.$this->tableName['contacts'] : $this->tableName['contacts'];
         }
 
-        $this->compiler = new ContactUsCompiler($this->tableName, $this->fullTableName);
-        $this->createResource('entities');
-        $this->createResource('model');
-        $this->createResource('controller');
-        $this->createResource('request');
-        $this->createResource('migration');
+        if (Schema::hasTable($this->fullTableName['contact_messages'])) {
+            $this->tableName['contact_messages'] = $this->ask('The table name '.$this->fullTableName['contact_messages'].' already exists! Please enter a new one without it\'s prefix:');
+            $this->fullTableName['contact_messages'] = $this->tablePrefix ? $this->tablePrefix.'_'.$this->tableName['contact_messages'] : $this->tableName['contact_messages'];
+        }
+
+        // Publish the entities
+        $this->info('Publishing Igni Contact Us entities..'.PHP_EOL);
+        $this->call('vendor:publish', [
+            '--provider' => \Despark\Cms\ContactUs\Providers\IgniContactUsServiceProvider::class,
+            '--tag' => ['entities'],
+        ]);
+        $this->info(PHP_EOL.'Dumping autoloader..');
+        $this->info(exec('composer dumpautoload'));
+        $this->compiler = new ContactsCompiler($this->tableName, $this->fullTableName);
+        $this->createResource('migration', 'contact_messages');
+        $this->createResource('migration', 'contacts');
         $this->info('Migrating..'.PHP_EOL);
         $this->call('migrate');
         $this->info('Seeding..'.PHP_EOL);
-        $this->seedPage();
+        $this->seedContact();
+        $this->seedContactMessage();
         $this->info('Fantastic! You are good to go :)'.PHP_EOL);
     }
 
     /**
      * @param $type
      */
-    protected function createResource($type)
+    protected function createResource($type, $suffix = null)
     {
-        $template = $this->getTemplate($type);
-        $template = $this->compiler->{'render_'.$type}($template);
+        $template = $this->getTemplate($type, $suffix);
+        $template = $suffix ? $this->compiler->{'render_'.$type}($template, $suffix) : $this->compiler->{'render_'.$type}($template);
         $path = config('ignicms.paths.'.$type);
-        $filename = $this->{$type.'_name'}().'.php';
+        $filename = $suffix ? $this->{$type.'_name'}($suffix).'.php' : $this->{$type.'_name'}().'.php';
         $this->saveResult($template, $path, $filename);
     }
 
@@ -105,9 +118,13 @@ class InstallCommand extends Command
      *
      * @return string
      */
-    public function getTemplate($type)
+    public function getTemplate($type, $suffix = null)
     {
-        return file_get_contents(__DIR__.DIRECTORY_SEPARATOR.'Page'.DIRECTORY_SEPARATOR.$type.'.stub');
+        if ($suffix) {
+            return file_get_contents(__DIR__.DIRECTORY_SEPARATOR.'stubs'.DIRECTORY_SEPARATOR.$type.'_'.$suffix.'.stub');
+        }
+
+        return file_get_contents(__DIR__.DIRECTORY_SEPARATOR.'stubs'.DIRECTORY_SEPARATOR.$type.'.stub');
     }
 
     /**
@@ -131,58 +148,35 @@ class InstallCommand extends Command
 
     /**
      * @return string
-     *
-     * @todo this is not needed in the command we should move it into the compiler
      */
-    public function model_name()
+    public function migration_name($suffix)
     {
-        return 'Page';
+        return date('Y_m_d_His').'_create_'.str_plural($this->tableName[$suffix]).'_table';
     }
 
-    /**
-     * @return mixed
-     */
-    public function entities_name()
+    public function seedContact()
     {
-        return 'pages';
-    }
-
-    /**
-     * @return string
-     */
-    public function controller_name()
-    {
-        return 'PagesController';
-    }
-
-    /**
-     * @return string
-     */
-    public function request_name()
-    {
-        return 'PagesUpdateRequest';
-    }
-
-    /**
-     * @return string
-     */
-    public function migration_name()
-    {
-        return date('Y_m_d_His').'_create_'.str_plural($this->tableName).'_table';
-    }
-
-    public function seedPage()
-    {
-        $page = [
-            'title' => 'Home',
-            'meta_description' => 'This is the meta description for the Home page.',
-            'slug' => 'home',
-            'content' => 'This is the content for the Home page.',
-            'is_published' => true,
+        $contact = [
+            'type' => 'email',
+            'content' => 'Example content for email contact.',
             'created_at' => date('Y-m-d H:i:s'),
             'updated_at' => date('Y-m-d H:i:s'),
         ];
 
-        \DB::table(str_plural($this->fullTableName))->insert($page);
+        \DB::table(str_plural($this->fullTableName['contacts']))->insert($contact);
+    }
+
+    public function seedContactMessage()
+    {
+        $contactMessage = [
+            'name' => 'Anton Geshev',
+            'email' => 'ageshev@despark.com',
+            'phone' => '1234567890',
+            'message' => 'Hello from Tony :)',
+            'created_at' => date('Y-m-d H:i:s'),
+            'updated_at' => date('Y-m-d H:i:s'),
+        ];
+
+        \DB::table(str_plural($this->fullTableName['contact_messages']))->insert($contactMessage);
     }
 }
