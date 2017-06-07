@@ -1,0 +1,49 @@
+{
+    "name": "despark/igni-contact-us",
+    "description": "Igni CMS Contact Us Package",
+    "keywords": [
+        "framework",
+        "laravel",
+        "despark",
+        "cms",
+        "core",
+        "contacts"
+    ],
+    "authors": [
+        {
+            "name": "Anton Geshev",
+            "email": "ageshev@despark.com",
+            "role": "Developer"
+        }
+    ],
+    "license": "MIT",
+    "type": "project",
+    "require": {
+        "php": ">=5.6.4",
+        "laravel/framework": "5.4.*",
+        "doctrine/dbal": "^2.5",
+        "yajra/laravel-datatables-oracle": "~7.0"
+    },
+    "require-dev": {
+        "barryvdh/laravel-ide-helper": "^2.1",
+        "graham-campbell/testbench": "^3.2",
+        "fzaninotto/faker": "~1.4",
+        "mockery/mockery": "0.9.*",
+        "phpunit/phpunit": "~5.7"
+    },
+    "autoload": {
+        "classmap": [],
+        "psr-4": {
+            "Despark\\Cms\\ContactUs\\": "src/"
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "Despark\\Tests\\Cms\\ContactUs\\": "tests/"
+        }
+    },
+    "config": {
+        "preferred-install": "dist"
+    },
+    "minimum-stability": "stable"
+}
