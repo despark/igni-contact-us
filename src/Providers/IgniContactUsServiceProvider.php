@@ -23,6 +23,7 @@ class IgniContactUsServiceProvider extends ServiceProvider
         $this->publishes([
             __DIR__.'/../../config/' => config_path(),
         ], 'config');
+        $this->loadRoutesFrom(__DIR__.'/../../routes/web.php');
     }
 
     /**
