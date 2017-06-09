@@ -88,6 +88,12 @@ class InstallCommand extends Command
             '--provider' => \Despark\Cms\ContactUs\Providers\IgniContactUsServiceProvider::class,
             '--tag' => ['config'],
         ]);
+        // Publish view files
+        $this->info('Publishing Igni Contact Us view files..'.PHP_EOL);
+        $this->call('vendor:publish', [
+            '--provider' => \Despark\Cms\ContactUs\Providers\IgniContactUsServiceProvider::class,
+            '--tag' => ['views'],
+        ]);
         $this->askForGoogleMaps();
         $this->info(PHP_EOL.'Dumping autoloader..');
         $this->info(exec('composer dumpautoload'));
