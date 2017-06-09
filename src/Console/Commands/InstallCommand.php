@@ -82,12 +82,13 @@ class InstallCommand extends Command
             $this->fullTableName['contact_messages'] = $this->tablePrefix ? $this->tablePrefix.'_'.$this->tableName['contact_messages'] : $this->tableName['contact_messages'];
         }
 
-        // Publish the entities
-        $this->info('Publishing Igni Contact Us entities..'.PHP_EOL);
+        // Publish config files
+        $this->info('Publishing Igni Contact Us config files..'.PHP_EOL);
         $this->call('vendor:publish', [
             '--provider' => \Despark\Cms\ContactUs\Providers\IgniContactUsServiceProvider::class,
-            '--tag' => ['entities'],
+            '--tag' => ['config'],
         ]);
+        $this->askForGoogleMaps();
         $this->info(PHP_EOL.'Dumping autoloader..');
         $this->info(exec('composer dumpautoload'));
         $this->compiler = new ContactsCompiler($this->tableName, $this->fullTableName);
@@ -95,8 +96,10 @@ class InstallCommand extends Command
         $this->createResource('migration', 'contacts');
         $this->info('Migrating..'.PHP_EOL);
         $this->call('migrate');
-        $this->info('Seeding..'.PHP_EOL);
-        $this->seedContact();
+        if ($this->confirm('Do you want to insert dummy data?')) {
+            $this->info('Seeding..'.PHP_EOL);
+            $this->seedContact();
+        }
         $this->seedContactMessage();
         $this->info('Fantastic! You are good to go :)'.PHP_EOL);
     }
@@ -178,5 +181,14 @@ class InstallCommand extends Command
         ];
 
         \DB::table(str_plural($this->fullTableName['contact_messages']))->insert($contactMessage);
+    }
+
+    public function askForGoogleMaps()
+    {
+        if ($this->confirm('Do you need Google Maps in your page? (You\'d need to provide an API key that can be generated for free from here: https://developers.google.com/maps/documentation/javascript/get-api-key)')) {
+            $apiKey = $this->ask('Enter your Google API key:');
+            $variable = PHP_EOL.PHP_EOL.'GOOGLE_MAPS_API_KEY='.$apiKey;
+            file_put_contents(base_path('.env'), $variable, FILE_APPEND | LOCK_EX);
+        }
     }
 }

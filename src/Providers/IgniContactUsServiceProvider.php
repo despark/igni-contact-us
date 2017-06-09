@@ -21,8 +21,8 @@ class IgniContactUsServiceProvider extends ServiceProvider
     public function boot()
     {
         $this->publishes([
-            __DIR__.'/../../config/entities/' => config_path('entities'),
-        ], 'entities');
+            __DIR__.'/../../config/' => config_path(),
+        ], 'config');
     }
 
     /**
