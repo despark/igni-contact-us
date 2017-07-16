@@ -11,6 +11,8 @@ class Contact extends AdminModel
     protected $fillable = [
         'type',
         'content',
+        'latitude',
+        'longitude',
     ];
 
     protected $rules = [

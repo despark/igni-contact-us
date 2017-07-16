@@ -10,27 +10,27 @@ if (! function_exists('igniContactForm')) {
             <form action="'.route('form.submit').'" method="POST" style="text-align: center;">
                 '.csrf_field().'
                 <div>
-                    <label for="name">Name</label>
+                    <label>Name</label>
                     <div>
                         <input type="text" name="name" value="'.old('name').'" required autofocus maxlength="255">
                     </div>
                 </div>
 
                 <div>
-                    <label for="email">Email</label>
+                    <label>Email</label>
                     <div>
                         <input type="email" name="email" value="'.old('email').'" required maxlength="255">
                     </div>
                 </div>
 
                 <div>
-                    <label for="phone">Phone</label>
+                    <label>Phone</label>
                     <div>
                         <input type="text" name="phone" value="'.old('phone').'" required maxlength="50">
                     </div>
                 </div>
                 <div>
-                    <label for="message">Message</label>
+                    <label>Message</label>
                     <div>
                         <textarea name="message" placeholder="Your message goes here...">'.old('message').'</textarea>
                     </div>
@@ -80,19 +80,35 @@ if (! function_exists('igniContactDetails')) {
 if (! function_exists('igniContactMap')) {
     function igniContactMap()
     {
+        $mapInfo = Despark\Cms\ContactUs\Models\Contact::whereType('address')->first();
+
+        if ($mapInfo) {
+            $lat = $mapInfo->latitude;
+            $lng = $mapInfo->longitude;
+            $title = $mapInfo->content;
+        } else {
+            $lat = -33.866621;
+            $lng = 151.195856;
+            $title = 'Google';
+        }
+
         $html = '
             <hr>
             <h1 style="text-align: center;">Map</h1>
             <hr>
-            <div id="map" style="width:400px;height:400px;background:yellow;margin-left:auto;margin-right:auto;"></div>
+            <div id="map" style="width:400px;height:400px;margin-left:auto;margin-right:auto;"></div>
             <script>
             function myMap() {
             var mapOptions = {
-                center: new google.maps.LatLng(51.5, -0.12),
-                zoom: 1,
-                mapTypeId: google.maps.MapTypeId.HYBRID
+                center: new google.maps.LatLng('.$lat.', '.$lng.'),
+                zoom: 17
             }
             var map = new google.maps.Map(document.getElementById("map"), mapOptions);
+            var marker = new google.maps.Marker({
+              position: {lat: '.$lat.', lng: '.$lng.'},
+              map: map,
+              title: "'.$title.'"
+            });
             }
             </script>
 
