@@ -3,10 +3,14 @@
 if (! function_exists('igniContactForm')) {
     function igniContactForm()
     {
+        $message = session()->get('message') ?? '';
         $html = '
             <hr>
             <h1 style="text-align: center;">Contact Form</h1>
             <hr>
+            <div>
+              '.$message.'
+            </div>
             <form action="'.route('form.submit').'" method="POST" style="text-align: center;">
                 '.csrf_field().'
                 <div>
