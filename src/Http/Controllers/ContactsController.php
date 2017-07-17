@@ -82,7 +82,7 @@ class ContactsController extends AdminController
             $fullGeocodeAddress .= str_replace(' ', '+', $match);
         }
 
-        $geocode = file_get_contents('http://maps.google.com/maps/api/geocode/json?address=Georgi+Benkovski+11&sensor=false');
+        $geocode = file_get_contents('http://maps.google.com/maps/api/geocode/json?address='.$fullGeocodeAddress.'&sensor=false');
         $output = json_decode($geocode);
         $input['latitude'] = $output->results[0]->geometry->location->lat;
         $input['longitude'] = $output->results[0]->geometry->location->lng;
