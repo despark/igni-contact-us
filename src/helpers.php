@@ -63,13 +63,13 @@ if (! function_exists('igniContactDetails')) {
         foreach ($contacts as $contact) {
             $html .= '
                 <div style="text-align: center;">
-                    <label for="type">Type</label>
+                    <label>Type</label>
                     <div>
                         <p>'.$contact->type.'</p>
                     </div>
                 </div>
                 <div style="text-align: center;">
-                    <label for="message">Content</label>
+                    <label>Content</label>
                     <div>
                         <p>'.$contact->content.'</p>
                     </div>
