@@ -3,8 +3,8 @@
 return [
     'name' => 'Contact Message',
     'description' => 'Contact Message resource',
-    'model' => \Despark\Cms\ContactUs\Models\ContactMessage::class,
-    'controller' => \Despark\Cms\ContactUs\Http\Controller\ContactMessagesController::class,
+    'model' => :app_namespaceModels\ContactMessage::class,
+    'controller' => \Despark\Cms\ContactUs\Http\Controllers\ContactMessagesController::class,
     'adminColumns' => [
         'name',
         'email',

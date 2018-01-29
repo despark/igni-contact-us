@@ -1,0 +1,24 @@
+<?php
+
+namespace :app_namespaceModels;
+
+use Despark\Cms\Models\AdminModel;
+
+class Contact extends AdminModel
+{
+    protected $table = ':table_name';
+
+    protected $fillable = [
+        'type',
+        'content',
+        'latitude',
+        'longitude',
+    ];
+
+    protected $rules = [
+        'type' => 'required|in:telephone,email,address,fax,skype,facebook,twitter,google+,instagram',
+        'content' => 'required|max:255',
+    ];
+
+    protected $identifier = 'contact';
+}

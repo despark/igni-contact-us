@@ -3,6 +3,7 @@
 namespace Despark\Cms\ContactUs\Http\Controllers;
 
 use Despark\Cms\Http\Controllers\AdminController;
+use Despark\Cms\Http\Requests\AdminFormRequest;
 
 class ContactsController extends AdminController
 {
@@ -26,20 +27,26 @@ class ContactsController extends AdminController
         }
         $record = $this->model->create($input);
 
+        if (method_exists($record, 'getManyToManyFields')) {
+            foreach ($this->model->getManyToManyFields() as $metod => $array) {
+                $record->$metod()->sync($request->get($array, []));
+            }
+        }
+
         $this->notify([
             'type' => 'success',
             'title' => 'Successful create!',
-            'description' => $this->getResourceConfig()['name'].' is created successfully!',
+            'description' => $this->getResourceConfig()['name'] . ' is created successfully!',
         ]);
 
-        return redirect(route($this->getResourceConfig()['id'].'.edit', ['id' => $record->id]));
+        return redirect(route($this->getResourceConfig()['id'] . '.edit', ['id' => $record->id]));
     }
 
     /**
      * Update the specified resource in storage.
      *
      * @param AdminFormRequest $request
-     * @param int              $id
+     * @param int $id
      *
      * @return Response
      */
@@ -59,20 +66,24 @@ class ContactsController extends AdminController
 
         $record->update($input);
 
+        if (method_exists($record, 'getManyToManyFields')) {
+            foreach ($this->model->getManyToManyFields() as $metod => $array) {
+                $record->$metod()->sync($request->get($array, []));
+            }
+        }
+
         $this->notify([
             'type' => 'success',
             'title' => 'Successful update!',
-            'description' => $this->getResourceConfig()['name'].' is updated successfully.',
+            'description' => $this->getResourceConfig()['name'] . ' is updated successfully.',
         ]);
 
         return redirect()->back();
     }
 
     /**
-     * Get geocode info for give input.
-     *
-     * @param array $input
-     * @param array $input
+     * @param $input
+     * @return mixed
      */
     public function getGeocodeLocation($input)
     {
@@ -82,7 +93,7 @@ class ContactsController extends AdminController
             $fullGeocodeAddress .= str_replace(' ', '+', $match);
         }
 
-        $geocode = file_get_contents('http://maps.google.com/maps/api/geocode/json?address='.$fullGeocodeAddress.'&sensor=false');
+        $geocode = file_get_contents('http://maps.google.com/maps/api/geocode/json?address=' . $fullGeocodeAddress . '&sensor=false');
         $output = json_decode($geocode);
         $input['latitude'] = $output->results[0]->geometry->location->lat;
         $input['longitude'] = $output->results[0]->geometry->location->lng;

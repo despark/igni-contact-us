@@ -14,6 +14,6 @@
 Route::group(['middleware' => ['web']], function () {
     Route::post('/form', [
         'as' => 'form.submit',
-        'uses' => '\Despark\Cms\ContactUs\Http\Controllers\ContactMessagesController@submit',
+        'uses' => 'Despark\Cms\ContactUs\Http\Controllers\ContactMessagesController@submit',
     ]);
 });

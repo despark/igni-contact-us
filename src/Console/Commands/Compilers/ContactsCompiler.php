@@ -13,11 +13,6 @@ class ContactsCompiler
     protected $tableName;
 
     /**
-     * @var string
-     */
-    protected $fullTableName;
-
-    /**
      * @var array
      */
     protected $migrationReplacements = [
@@ -26,29 +21,68 @@ class ContactsCompiler
     ];
 
     /**
-     * @param Command $command
-     * @param         $identifier
-     * @param         $options
-     *
-     * @todo why setting options where we can get it from command? Either remove command or keep options
+     * @var array
      */
-    public function __construct($tableName, $fullTableName)
+    protected $modelReplacements = [
+        ':app_namespace' => '',
+        ':table_name' => '',
+    ];
+
+    /**
+     * @var array
+     */
+    protected $entitiesReplacements = [
+        ':app_namespace' => '',
+    ];
+
+    /**
+     * ContactsCompiler constructor.
+     * @param $tableName
+     */
+    public function __construct($tableName)
     {
         $this->tableName = $tableName;
-        $this->fullTableName = $fullTableName;
     }
 
     /**
      * @param $template
-     *
+     * @param $suffix
      * @return string
      */
     public function render_migration($template, $suffix)
     {
-        $this->migrationReplacements[':table_name'] = str_plural($this->tableName[$suffix]);
-        $this->migrationReplacements[':migration_class'] = 'Create'.str_plural(studly_case($this->tableName[$suffix])).'Table';
+        $this->migrationReplacements[':table_name'] = $this->tableName[$suffix];
+        $this->migrationReplacements[':migration_class'] = 'Create' . str_plural(studly_case($this->tableName[$suffix])) . 'Table';
 
         $template = strtr($template, $this->migrationReplacements);
+
+        return $template;
+    }
+
+    /**
+     * @param $template
+     * @param $suffix
+     * @return string
+     */
+    public function render_model($template, $suffix)
+    {
+        $this->modelReplacements[':app_namespace'] = app()->getNamespace();
+        $this->modelReplacements[':table_name'] = $this->tableName[$suffix];
+
+        $template = strtr($template, $this->modelReplacements);
+
+        return $template;
+    }
+
+    /**
+     * @param $template
+     * @return string
+     */
+    public function render_entities($template)
+    {
+        $this->entitiesReplacements[':app_namespace'] = app()->getNamespace();
+
+        $template = strtr($template, $this->entitiesReplacements);
 
         return $template;
     }

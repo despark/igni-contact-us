@@ -3,8 +3,8 @@
 return [
     'name' => 'Contact',
     'description' => 'Contact resource',
-    'model' => \Despark\Cms\ContactUs\Models\Contact::class,
-    'controller' => \Despark\Cms\ContactUs\Http\Controller\ContactsController::class,
+    'model' => :app_namespaceModels\Contact::class,
+    'controller' => \Despark\Cms\ContactUs\Http\Controllers\ContactsController::class,
     'adminColumns' => [
         'type',
     ],
